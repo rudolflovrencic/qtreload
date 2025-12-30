@@ -53,6 +53,9 @@ changed QML files.
   file save. Consequently, the reported file not exist in the slot function (see
   the note in the [documentation][13]). Therefore, a basic *sleep and recheck*
   method is employed.
+- The `Loader` element seems to have its own cache so `HotReloader` adds a time
+  stamp to the `Loader` `source` URL in order to ensure a unique URL every time
+  and circumvents the cache.
 - When changing the value of `HOT_RELOAD`, remove the existing `build`
   directory as the existing files seem to confuse Qt.
 
