@@ -20,6 +20,7 @@ Loader {
     Watcher {
         id: watcher
         paths: [@HOT_RELOADABLE_QML_FILE_PATHS@]
+        // paths: ["/home/rudolf/dev/qtreload/content"]
         onFileModified: modifiedFile => root.reload(modifiedFile)
         onDirectoryModified: modifiedDirectory => root.reload(modifiedDirectory)
     }

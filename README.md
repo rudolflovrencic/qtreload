@@ -26,7 +26,7 @@ PRESET=gcc; cmake --preset $PRESET -DHOT_RELOAD=true && cmake --build --preset $
 ## Run and test
 
 1. Run the `./build/qtreload` executable.
-2. Edit the `color` property in `content/First.qml` and you should see the
+2. Edit the `color` property in `qml/First.qml` and you should see the
    changes reflected in the application.
 
 ## How it works?
@@ -34,7 +34,7 @@ PRESET=gcc; cmake --preset $PRESET -DHOT_RELOAD=true && cmake --build --preset $
 The `HOT_RELOAD` project option controls if hot reload is enabled and
 therefore, the ahead-of-time compilation of QML files is disabled.
 
-Files `content/First.qml` and `content/Second.qml` are *hot reloadable*, meaning
+Files `qml/First.qml` and `qml/Second.qml` are *hot reloadable*, meaning
 that when `HOT_RELOAD` is set to `true`, they are not compiled into the
 executable. Instead, they are loaded at runtime and reloaded when any changes
 occur. This loading is performed by the `HotReloader` component defined in

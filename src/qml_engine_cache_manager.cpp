@@ -18,5 +18,6 @@ QmlEngineCacheManager* QmlEngineCacheManager::create(QQmlEngine* qml_engine, QJS
 
 void QmlEngineCacheManager::clearCache()
 {
+    qDebug() << "clearing cache!";
     qml_engine->clearComponentCache();
 }

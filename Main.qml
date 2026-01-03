@@ -7,8 +7,10 @@ ApplicationWindow {
     id: root
     visible: true
 
-    HotReloader {
-        id: hotReloader
-        anchors.fill: parent
+    Shortcut {
+        sequence: ["Ctrl+Shift+R"]
+        onActivated: QmlEngineCacheManager.clearCache()
     }
+
+    First {}
 }

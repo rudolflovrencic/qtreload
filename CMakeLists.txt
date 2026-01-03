@@ -11,7 +11,6 @@ find_package(Qt6 "6.10.0"
     COMPONENTS
         Core
         Gui
-        Graphs
         Qml
         Quick
         QuickControls2)
@@ -29,41 +28,22 @@ target_link_libraries(qtreload
         Qt6::Gui
         Qt6::Qml
         Qt6::Quick
-        Qt6::QuickControls2
-        Qt6::Graphs)
+        Qt6::QuickControls2)
 
-# TODO: Consider making the hot reloder a separate QML module.
+function (enable_qml_hotreload target)
+    get_target_property(source_dir ${target} SOURCE_DIR)
+    get_target_property(qmldir_content ${target} _qt_internal_qmldir_content)
+    string(REGEX REPLACE "prefer [^\n]*" "prefer ${source_dir}/" qmldir_content "${qmldir_content}")
+    set_property(TARGET ${target} PROPERTY _qt_internal_qmldir_content "${qmldir_content}")
+endfunction()
 
-set(SOURCES
-    "src/watcher.hpp"
-    "src/watcher.cpp")
-set(QML_FILES "Main.qml")
-set(HOT_RELOADABLE_QML_FILES
-    "content/First.qml"
-    "content/Second.qml")
-if (HOT_RELOAD)
-    list(APPEND SOURCES
-        "src/qml_engine_cache_manager.hpp"
-        "src/qml_engine_cache_manager.cpp")
-    set(MAIN_HOT_RELOADABLE_QML_FILE_PATH "${PROJECT_SOURCE_DIR}/content/First.qml")
-    list(TRANSFORM HOT_RELOADABLE_QML_FILES PREPEND "\"${PROJECT_SOURCE_DIR}/"
-         OUTPUT_VARIABLE HOT_RELOADABLE_QML_FILE_PATHS)
-    list(TRANSFORM HOT_RELOADABLE_QML_FILE_PATHS APPEND "\"")
-    list(JOIN HOT_RELOADABLE_QML_FILE_PATHS ", " HOT_RELOADABLE_QML_FILE_PATHS)
-    configure_file("${PROJECT_SOURCE_DIR}/HotReloader.qml.in"
-        "${PROJECT_BINARY_DIR}/generated/HotReloader.qml"
-        @ONLY
-        NEWLINE_STYLE LF)
-    list(APPEND QML_FILES "${PROJECT_BINARY_DIR}/generated/HotReloader.qml")
-    set_source_files_properties("${PROJECT_BINARY_DIR}/generated/HotReloader.qml"
-        PROPERTIES
-            QT_RESOURCE_ALIAS "HotReloader.qml")
-else()
-    list(APPEND QML_FILES "${HOT_RELOADABLE_QML_FILES}")
-endif()
 qt_add_qml_module(qtreload
-    URI             "lovrencic.qtreload"
-    VERSION         "1.0"
-    RESOURCE_PREFIX "/"
-    SOURCES         "${SOURCES}"
-    QML_FILES       "${QML_FILES}")
+    URI       "lovrencic.qtreload"
+    SOURCES   "src/qml_engine_cache_manager.hpp"
+              "src/qml_engine_cache_manager.cpp"
+    QML_FILES "Main.qml"
+              "qml/First.qml"
+              "qml/Second.qml")
+if (HOT_RELOAD)
+    enable_qml_hotreload(qtreload)
+endif()

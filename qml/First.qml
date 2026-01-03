@@ -3,6 +3,6 @@ import QtQuick
 Rectangle {
     id: root
     anchors.fill: parent
-    color: "blue"
-    // Second {}
+    color: "red"
+    Second {}
 }
