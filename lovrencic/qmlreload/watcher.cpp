@@ -4,10 +4,10 @@
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 
-#include <QDebug> // TODO: Remove me!
-
 #include <chrono>
 #include <cassert>
+
+namespace lovrencic::qmlreload {
 
 Watcher::Watcher(QObject* parent) noexcept : QObject{parent}, watcher{new QFileSystemWatcher(this)}
 {
@@ -20,28 +20,28 @@ Watcher::Watcher(QObject* parent) noexcept : QObject{parent}, watcher{new QFileS
             recheck_file_with_delay(initial_check_count, std::move(file_info));
         }
     });
-    connect(watcher,
-            &QFileSystemWatcher::directoryChanged,
-            this,
-            [this](const QString& directory_path) noexcept -> void { emit directoryModified(directory_path); });
 }
 
-QStringList Watcher::get_paths() const noexcept
+QStringList Watcher::get_files() const noexcept
 {
-    return paths;
+    return files;
 }
 
-void Watcher::set_paths(QStringList new_paths)
+void Watcher::set_files(QStringList new_files)
 {
-    if (paths != new_paths) {
-        if (!paths.empty()) {
-            [[maybe_unused]] const auto not_removed = watcher->removePaths(paths);
+    if (files != new_files) {
+        for (const auto& file : new_files) {
+            const QFileInfo file_info{file};
+            if (!file_info.isFile()) { throw PathNotPointingToFileError{file}; }
+        }
+        if (!files.empty()) {
+            [[maybe_unused]] const auto not_removed = watcher->removePaths(files);
             assert(not_removed.empty());
         }
-        paths                = std::move(new_paths);
-        const auto not_added = watcher->addPaths(paths);
-        if (!not_added.empty()) { throw FailedToWatchPathError{not_added[0]}; }
-        emit pathsChanged();
+        files                = std::move(new_files);
+        const auto not_added = watcher->addPaths(files);
+        if (!not_added.empty()) { throw FailedToWatchFileError{not_added[0]}; }
+        emit filesChanged();
     }
 }
 
@@ -59,27 +59,24 @@ void Watcher::on_debounce_timer_expired(unsigned check_count, QFileInfo file_inf
 {
     const auto file_path = file_info.filePath();
     if (file_info.exists()) {
-        qDebug() << "[WATCHER] file" << file_path << "exists after" << check_count << "check";
         const auto file_path = file_info.filePath();
         emit fileModified(file_path);
-        if (!watcher->addPath(file_path)) { throw FailedToWatchPathError{file_path}; }
+        if (!watcher->addPath(file_path)) { throw FailedToWatchFileError{file_path}; }
     } else {
         recheck_file_with_delay(++check_count, std::move(file_info));
     }
 }
 
-FilePathLostError::FilePathLostError(QStringView path) noexcept : std::runtime_error{format_what_message(path)} {}
-
-std::string FilePathLostError::format_what_message(QStringView path)
-{
-    return QStringLiteral("file \"%1\" has been lost").arg(path).toStdString();
-}
-
-FailedToWatchPathError::FailedToWatchPathError(QStringView path) noexcept
-        : std::runtime_error{format_what_message(path)}
+FilePathLostError::FilePathLostError(QStringView path) noexcept
+        : std::runtime_error{QStringLiteral("file \"%1\" has been lost").arg(path).toStdString()}
 {}
 
-std::string FailedToWatchPathError::format_what_message(QStringView path)
-{
-    return QStringLiteral("failed to watch \"%1\"").arg(path).toStdString();
+FailedToWatchFileError::FailedToWatchFileError(QStringView path) noexcept
+        : std::runtime_error{QStringLiteral("failed to watch \"%1\"").arg(path).toStdString()}
+{}
+
+PathNotPointingToFileError::PathNotPointingToFileError(QStringView path) noexcept
+        : std::runtime_error{QStringLiteral("path \"%1\" not pointing to a file").arg(path).toStdString()}
+{}
+
 }

@@ -8,9 +8,9 @@
 int main(int argc, char* argv[])
 {
     QCoreApplication::setOrganizationName(QStringLiteral("lovrencic"));
-    QCoreApplication::setApplicationName(QStringLiteral("qtreload"));
+    QCoreApplication::setApplicationName(QStringLiteral("app"));
 
-    QGuiApplication app{argc, argv};
+    const QGuiApplication app{argc, argv};
 
     QQuickStyle::setStyle("Basic");
 
@@ -23,7 +23,14 @@ int main(int argc, char* argv[])
         []() noexcept -> void { QCoreApplication::exit(EXIT_FAILURE); },
         Qt::QueuedConnection);
 
-    engine.loadFromModule("lovrencic.qtreload", "Main");
+    static constexpr const char main_source_file[]{
+#ifdef HOT_RELOAD
+        "HotReloadableMain"
+#else
+        "Main"
+#endif
+    };
+    engine.loadFromModule("lovrencic.app", main_source_file);
 
     return app.exec();
 }

@@ -1,0 +1,14 @@
+import lovrencic.qmlreload
+
+import QtQuick
+import QtQuick.Controls
+
+ApplicationWindow {
+    id: root
+    visible: true
+
+    HotReloader {
+        entryFile: "@HOT_RELOAD_ENTRY_FILE@"
+        watchedFiles: [@HOT_RELOAD_WATCHED_FILES@]
+    }
+}
